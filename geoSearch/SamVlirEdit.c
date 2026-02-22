@@ -7,6 +7,7 @@
  ********************************************************************/
 
 #include <geos.h>
+#include <string.h>
 
 #include "SamVlir.h"
 
@@ -33,6 +34,8 @@ char cut_msg[] = "cut handler called.";
 char copy_msg[] = "copy handler called.";
 char paste_msg[] = "paste handler called.";
 char icon1_msg[] = "icon handler called.";
+static uint8_t buffer_backup[256];
+char dirname[16];
 
 /********************************************************************
  * This is a dummy event handler function. Customize this for your
@@ -54,7 +57,14 @@ __attribute__((noinline)) void DoCut(void) {
  ********************************************************************/
 
 __attribute__((noinline)) void DoCopy(void) {
-  __r15 = (uint16_t)copy_msg;
+  dir_entry_t **de;
+  //TODO: Use GEOS kernal for memcpy to reduce code size
+  memcpy(buffer_backup, &diskBlkBuf, 256);
+  disk_err_t err = Get1stDirEntry(de);
+  dir_entry_t *de_ptr = *de;
+  memcpy(dirname, de_ptr->name, 16);
+  memcpy(&diskBlkBuf, buffer_backup, 256);
+  __r15 = (uint16_t)dirname;
   DoDlgBox(dlg_edit);
 }
 
