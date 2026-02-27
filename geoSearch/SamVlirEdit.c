@@ -37,6 +37,10 @@ char icon1_msg[] = "icon handler called.";
 static uint8_t buffer_backup[256];
 char dirname[16];
 
+// To keep track of "cursor" for printing text
+uint16_t text_x = 0 + 17;
+uint8_t text_y = 0;
+
 /********************************************************************
  * This is a dummy event handler function. Customize this for your
  * own application. The noinline decorator guarantees that the
@@ -64,6 +68,13 @@ __attribute__((noinline)) void DoCopy(void) {
   dir_entry_t *de_ptr = *de;
   memcpy(dirname, de_ptr->name, 16);
   memcpy(&diskBlkBuf, buffer_backup, 256);
+
+  //PutString(text_x, text_y, dirname);
+  PutString(text_x, text_y, copy_msg);
+  // Get new values from Registers after PutString:
+  text_x = __r11;
+  text_y = __r1H;
+
   __r15 = (uint16_t)dirname;
   DoDlgBox(dlg_edit);
 }
