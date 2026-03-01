@@ -39,7 +39,8 @@ char dirname[16];
 
 // To keep track of "cursor" for printing text
 uint16_t text_x = 0 + 16;
-// NOTE: Don't overlap the drop-down menu - it crashes the OS!
+// NOTE: Don't overlap the height of the font to top of screen - it crashes
+// the OS!
 uint8_t text_y = 0 + 8;
 
 /********************************************************************
