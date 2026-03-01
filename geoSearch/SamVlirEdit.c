@@ -38,8 +38,9 @@ static uint8_t buffer_backup[256];
 char dirname[16];
 
 // To keep track of "cursor" for printing text
-uint16_t text_x = 0 + 17;
-uint8_t text_y = 0;
+uint16_t text_x = 0 + 16;
+// NOTE: Don't overlap the drop-down menu - it crashes the OS!
+uint8_t text_y = 0 + 8;
 
 /********************************************************************
  * This is a dummy event handler function. Customize this for your
