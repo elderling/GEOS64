@@ -64,15 +64,19 @@ __attribute__((noinline)) void DoCut(void) {
 
 __attribute__((noinline)) void DoCopy(void) {
   dir_entry_t **de;
-  //TODO: Use GEOS kernal for memcpy to reduce code size
-  memcpy(buffer_backup, &diskBlkBuf, 256);
+
+  MoveData(&diskBlkBuf, buffer_backup, 256);
+
   disk_err_t err = Get1stDirEntry(de);
   dir_entry_t *de_ptr = *de;
-  memcpy(dirname, de_ptr->name, 16);
-  memcpy(&diskBlkBuf, buffer_backup, 256);
+
+  CopyFString((uint8_t *)de_ptr->name, (uint8_t *)dirname, 16);
+
+  MoveData(buffer_backup, &diskBlkBuf, 256);
 
   //PutString(text_x, text_y, dirname);
   PutString(text_x, text_y, copy_msg);
+
   // Get new values from Registers after PutString:
   text_x = __r11;
   text_y = __r1H;
