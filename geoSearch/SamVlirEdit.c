@@ -7,6 +7,7 @@
  ********************************************************************/
 
 #include <geos.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "SamVlir.h"
@@ -16,6 +17,8 @@
 
 #pragma clang section text = ".vlir02.text" data = ".vlir02.data" bss =        \
     ".vlir02.bss"
+
+#define MAX_LINES 20
 
 /* Dialog box to indicate that an event handler funnction was called. */
 /* Parameter 2 of DB_NAME_SECT sets the vlir record 2 */
@@ -35,13 +38,15 @@ char copy_msg[] = "copy handler called.";
 char paste_msg[] = "paste handler called.";
 char icon1_msg[] = "icon handler called.";
 static uint8_t buffer_backup[256];
-char dirname[16];
+
+// Init to zero. filenames are 16 chars plus null terminator
+char dirname[17] = {0};
 
 // To keep track of "cursor" for printing text
-uint16_t text_x = 0 + 16;
+uint16_t text_x = 0 + 2;
 // NOTE: Don't overlap the height of the font to top of screen - it crashes
 // the OS!
-uint8_t text_y = 0 + 8;
+uint8_t text_y = 0 + 20;
 
 /********************************************************************
  * This is a dummy event handler function. Customize this for your
@@ -65,21 +70,51 @@ __attribute__((noinline)) void DoCut(void) {
 __attribute__((noinline)) void DoCopy(void) {
   dir_entry_t **de;
 
+  // Stash diskBlkBuf so we don't interfere with anything
   MoveData(&diskBlkBuf, buffer_backup, 256);
 
   disk_err_t err = Get1stDirEntry(de);
   dir_entry_t *de_ptr = *de;
 
-  CopyFString((uint8_t *)de_ptr->name, (uint8_t *)dirname, 16);
+  if(err) {
+    PutDecimal(err, text_x, text_y, SET_LEFTJUST | SET_NOSURPRESS);
+    /*
+    text_x = __r11;
+    text_y = __r1H;
+    */
+  }
+  else {
+    CopyFString((uint8_t *)de_ptr->name, (uint8_t *)dirname, 16);
 
+    PutString(text_x, text_y, dirname);
+    text_x = 2;
+    text_y += 10;
+
+    // Get new values from Registers after PutString:
+    /*
+    text_x = __r11;
+    text_y = __r1H;
+    */
+
+    bool end_dir = 0;
+    uint8_t lines = 0;
+    do {
+      err = GetNxtDirEntry(de, &end_dir); 
+      if (!err && !end_dir) {
+        de_ptr = *de;
+        CopyFString((uint8_t *)de_ptr->name, (uint8_t *)dirname, 16);
+        PutString(text_x, text_y, dirname);
+        text_x = 2;
+        text_y += 10;
+      }
+    }
+    while (!err && !end_dir && lines <= MAX_LINES);
+
+    //PutString(text_x, text_y, SPACE);
+  }
+
+  // Put diskBlkBuf back the way we found it
   MoveData(buffer_backup, &diskBlkBuf, 256);
-
-  //PutString(text_x, text_y, dirname);
-  PutString(text_x, text_y, copy_msg);
-
-  // Get new values from Registers after PutString:
-  text_x = __r11;
-  text_y = __r1H;
 
   __r15 = (uint16_t)dirname;
   DoDlgBox(dlg_edit);
