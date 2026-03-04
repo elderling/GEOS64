@@ -8,7 +8,6 @@
 
 #include <geos.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "SamVlir.h"
 
@@ -41,6 +40,8 @@ static uint8_t buffer_backup[256];
 
 // Init to zero. filenames are 16 chars plus null terminator
 char dirname[17] = {0};
+
+char outstring[41] = {0};
 
 // To keep track of "cursor" for printing text
 uint16_t text_x = 0 + 2;
@@ -112,6 +113,8 @@ __attribute__((noinline)) void DoCopy(void) {
 
     //PutString(text_x, text_y, SPACE);
   }
+  
+  sprintf(outstring, "diskBlkBuf address is %X", 1234);
 
   // Put diskBlkBuf back the way we found it
   MoveData(buffer_backup, &diskBlkBuf, 256);
