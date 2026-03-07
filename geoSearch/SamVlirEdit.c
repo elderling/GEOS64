@@ -7,7 +7,6 @@
  ********************************************************************/
 
 #include <geos.h>
-#include <stdio.h>
 
 #include "SamVlir.h"
 
@@ -114,8 +113,6 @@ __attribute__((noinline)) void DoCopy(void) {
     //PutString(text_x, text_y, SPACE);
   }
   
-  sprintf(outstring, "diskBlkBuf address is %X", 1234);
-
   // Put diskBlkBuf back the way we found it
   MoveData(buffer_backup, &diskBlkBuf, 256);
 
